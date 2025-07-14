@@ -139,80 +139,107 @@ So happy birthday again, pookie. May this year be kind to you in all the ways yo
 <!-- Keep your HTML same -->
 ...
 <script>
-  function expandCard(card) {
-    document.querySelectorAll('.card').forEach(c => {
-      if (c !== card) c.classList.remove('expanded');
-    });
-    card.classList.toggle('expanded');
-  }
-
-  const emojiList = ['🎉', '🎂', '🎁', '🎈', '🍰', '🍫', '🍬', '❤️'];
-  const canvas = document.getElementById('cosmicCanvas');
-  const ctx = canvas.getContext('2d');
-
-  let width, height, dpr;
-  let items = [];
-
-  const isMobile = window.innerWidth < 768;
-  const ITEM_COUNT = isMobile ? 280 : 400;
-
-  function resizeCanvas() {
-    dpr = window.devicePixelRatio || 1;
-    width = window.innerWidth;
-    height = window.innerHeight;
-
-    canvas.width = width * dpr;
-    canvas.height = height * dpr;
-    canvas.style.width = width + 'px';
-    canvas.style.height = height + 'px';
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-  }
-
-  function createItems() {
-    items = [];
-    for (let i = 0; i < ITEM_COUNT; i++) {
-      const size = Math.floor(Math.random() * 8 + 16); // 16–24px
-      items.push({
-        emoji: emojiList[Math.floor(Math.random() * emojiList.length)],
-        x: Math.random() * width,
-        y: Math.random() * height,
-        size: size,
-        speed: Math.random() * 0.5 + 0.3,
-        alpha: Math.random() * 0.5 + 0.5
-      });
-    }
-  }
-
-  function draw() {
-    ctx.clearRect(0, 0, width, height);
-    for (let item of items) {
-      ctx.font = `${item.size}px "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif`;
-      ctx.globalAlpha = item.alpha;
-      ctx.fillText(item.emoji, item.x, item.y);
-      item.y += item.speed;
-      if (item.y > height) {
-        item.y = -item.size;
-        item.x = Math.random() * width;
-        item.emoji = emojiList[Math.floor(Math.random() * emojiList.length)];
-      }
-    }
-    ctx.globalAlpha = 1;
-  }
-
-  function animate() {
-    draw();
-    requestAnimationFrame(animate);
-  }
-
-  window.addEventListener('resize', () => {
-    resizeCanvas();
-    createItems();
+function expandCard(card) {
+  document.querySelectorAll('.card').forEach(c => {
+    if (c !== card) c.classList.remove('expanded');
   });
+  card.classList.toggle('expanded');
+}
 
+const emojiList = ['🎉', '🎂', '🎁', '🎈', '🍰', '🍫', '🍬', '❤️'];
+const canvas = document.getElementById('cosmicCanvas');
+const ctx = canvas.getContext('2d');
+
+let width, height, dpr;
+
+const isMobile = window.innerWidth < 768;
+const ITEM_COUNT = isMobile ? 220 : 400;
+let items = [], emojiImages = {};
+
+function resizeCanvas() {
+  dpr = window.devicePixelRatio || 1;
+  width = window.innerWidth;
+  height = window.innerHeight;
+
+  canvas.width = width * dpr;
+  canvas.height = height * dpr;
+  canvas.style.width = width + 'px';
+  canvas.style.height = height + 'px';
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+}
+
+function renderEmojiToImage(emoji, size) {
+  const off = document.createElement('canvas');
+  const offCtx = off.getContext('2d');
+  off.width = off.height = size;
+
+  offCtx.font = `${size}px "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif`;
+  offCtx.textAlign = 'center';
+  offCtx.textBaseline = 'middle';
+  offCtx.fillText(emoji, size / 2, size / 2);
+
+  return off;
+}
+
+function generateEmojiImages() {
+  emojiImages = {};
+  for (let emoji of emojiList) {
+    emojiImages[emoji] = [];
+    for (let size = 14; size <= 24; size += 2) {
+      emojiImages[emoji][size] = renderEmojiToImage(emoji, size);
+    }
+  }
+}
+
+function createItems() {
+  items = [];
+  for (let i = 0; i < ITEM_COUNT; i++) {
+    const emoji = emojiList[Math.floor(Math.random() * emojiList.length)];
+    const size = Math.floor(Math.random() * 6) * 2 + 14; // 14–24
+    items.push({
+      emoji,
+      size,
+      x: Math.random() * width,
+      y: Math.random() * height,
+      speed: Math.random() * 0.5 + 0.25,
+      alpha: Math.random() * 0.5 + 0.5
+    });
+  }
+}
+
+function draw() {
+  ctx.clearRect(0, 0, width, height);
+  for (let item of items) {
+    const img = emojiImages[item.emoji][item.size];
+    ctx.globalAlpha = item.alpha;
+    ctx.drawImage(img, item.x, item.y, item.size, item.size);
+    item.y += item.speed;
+
+    if (item.y > height + item.size) {
+      item.y = -item.size;
+      item.x = Math.random() * width;
+      item.emoji = emojiList[Math.floor(Math.random() * emojiList.length)];
+      item.size = Math.floor(Math.random() * 6) * 2 + 14;
+    }
+  }
+  ctx.globalAlpha = 1;
+}
+
+function animate() {
+  draw();
+  requestAnimationFrame(animate);
+}
+
+window.addEventListener('resize', () => {
   resizeCanvas();
+  generateEmojiImages();
   createItems();
-  animate();
-</script>
+});
 
+resizeCanvas();
+generateEmojiImages();
+createItems();
+animate();
+</script>
 </body>
 </html>
