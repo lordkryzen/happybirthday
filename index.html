@@ -46,11 +46,11 @@
       border-radius: 20px;
       width: 90%;
       max-width: 500px;
-      height: 100px;
+      height: 90px;
       padding: 1rem;
       text-align: center;
       cursor: pointer;
-      transition: transform 0.4s ease, height 0.4s ease, padding 0.4s ease;
+      transition: height 0.6s ease, transform 0.6s ease, padding 0.6s ease;
       overflow: hidden;
       position: relative;
       box-shadow: 0 0 15px rgba(255, 255, 255, 0.08);
@@ -80,7 +80,6 @@
     }
 
     .card.expanded {
-      height: auto;
       transform: scale(1.03);
       padding: 2rem 1.5rem;
     }
@@ -152,10 +151,33 @@ So happy birthday again, pookie. May this year be kind to you in all the ways yo
 
   <script>
     function expandCard(card) {
-      document.querySelectorAll('.card').forEach(c => {
-        if (c !== card) c.classList.remove('expanded');
+      const isExpanded = card.classList.contains('expanded');
+
+      document.querySelectorAll('.card.expanded').forEach(c => {
+        if (c !== card) collapseCard(c);
       });
-      card.classList.toggle('expanded');
+
+      if (!isExpanded) expand(card);
+      else collapseCard(card);
+    }
+
+    function expand(card) {
+      card.style.height = card.scrollHeight + 'px';
+      card.classList.add('expanded');
+      requestAnimationFrame(() => {
+        card.style.height = card.scrollHeight + 'px';
+      });
+    }
+
+    function collapseCard(card) {
+      const currentHeight = card.scrollHeight;
+      card.style.height = currentHeight + 'px';
+      requestAnimationFrame(() => {
+        card.style.height = '90px';
+        setTimeout(() => {
+          card.classList.remove('expanded');
+        }, 600);
+      });
     }
 
     const emojiList = ['🎉', '🎂', '🎁', '🎈', '🍰', '🍫', '🍬', '❤️'];
@@ -183,8 +205,9 @@ So happy birthday again, pookie. May this year be kind to you in all the ways yo
     function renderEmojiToImage(emoji, size) {
       const off = document.createElement('canvas');
       const offCtx = off.getContext('2d');
-      off.width = off.height = size;
+      off.width = off.height = size * 2;
 
+      offCtx.scale(2, 2);
       offCtx.font = `${size}px "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif`;
       offCtx.textAlign = 'center';
       offCtx.textBaseline = 'middle';
@@ -253,7 +276,7 @@ So happy birthday again, pookie. May this year be kind to you in all the ways yo
     createItems();
     animate();
 
-    // Disable right click
+    // Disable right-click
     document.addEventListener('contextmenu', e => e.preventDefault());
   </script>
 </body>
