@@ -3,257 +3,195 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Birthday Surprise</title>
+  <title>Happy Birthday</title>
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@700&display=swap" rel="stylesheet">
   <style>
-    * {
-      box-sizing: border-box;
-    }
-
+    * { box-sizing: border-box; }
     html, body {
-      margin: 0;
-      padding: 0;
-      height: 100%;
-      background: black;
-      overflow-x: hidden;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      color: white;
-      -webkit-user-select: none;
-      -webkit-tap-highlight-color: transparent;
-      user-select: none;
-      overscroll-behavior: none;
+      margin: 0; padding: 0; height: 100%; background: black;
+      overflow-x: hidden; font-family: 'Segoe UI', sans-serif;
+      color: white; -webkit-tap-highlight-color: transparent;
     }
-
     canvas {
-      position: absolute;
-      top: 0;
-      left: 0;
-      z-index: 0;
-      display: block;
+      position: absolute; top: 0; left: 0; z-index: 0;
       pointer-events: none;
     }
-
+    #mainContent { display: none; }
     .card-container {
-      position: relative;
-      z-index: 2;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 1rem;
-      padding: 2rem 1rem;
-      margin-top: 5vh;
+      position: relative; z-index: 2;
+      display: flex; flex-direction: column; align-items: center;
+      gap: 1rem; padding: 2rem 1rem; margin-top: 5vh;
     }
-
     .card {
-      background: rgba(255, 255, 255, 0.08);
-      backdrop-filter: blur(8px);
-      border-radius: 20px;
-      width: 90%;
-      max-width: 500px;
-      height: 90px;
-      padding: 1rem;
-      text-align: center;
-      cursor: pointer;
+      background: rgba(255,255,255,0.08); backdrop-filter: blur(8px);
+      border-radius:20px; width:90%; max-width:500px; height:90px;
+      padding:1rem; text-align:center; cursor: pointer;
       transition: height 0.6s ease, transform 0.6s ease, padding 0.6s ease;
-      overflow: hidden;
-      position: relative;
-      box-shadow: 0 0 15px rgba(255, 255, 255, 0.08);
-      border: none;
-      outline: none;
+      overflow:hidden; position:relative; box-shadow:0 0 15px rgba(255,255,255,0.08);
     }
-
-    .card:focus,
-    .card:focus-visible,
-    .card:focus-within {
-      outline: none !important;
-      box-shadow: none !important;
-    }
-
-    .card h3 {
-      margin: 0;
-      font-size: 1rem;
-    }
-
+    .card h3 { margin:0; font-size:1rem; }
     .card p {
+      opacity:0; pointer-events:none; transition:opacity 0.4s ease;
+      margin-top:1rem; line-height:1.5; white-space:pre-wrap;
+    }
+    .card.expanded { transform: scale(1.03); padding:2rem 1.5rem; }
+    .card.expanded p { opacity:1; pointer-events:auto; }
+
+    #lockOverlay {
+      position:fixed; inset:0;
+      background:rgba(255,255,255,0.04);
+      backdrop-filter: blur(12px);
+      z-index:9998;
+      display:flex; flex-direction:column; justify-content:center; align-items:center;
+      text-align:center; padding:2rem; font-size:1.2rem;
+      transition: opacity 0.8s ease;
+    }
+    #countdown {
+      font-size:2rem; margin-top:1rem;
+      font-weight:bold; letter-spacing:1px;
+    }
+
+    #birthdayOverlay {
+      position:fixed; inset:0;
+      background:rgba(255,255,255,0.05);
+      backdrop-filter:blur(16px);
+      display:flex; flex-direction:column; align-items:center; justify-content:center;
+      z-index:9999;
       opacity: 0;
-      pointer-events: none;
-      transition: opacity 0.4s ease;
-      margin-top: 1rem;
-      line-height: 1.5;
-      white-space: pre-wrap;
+      transform: translateY(100%);
+      transition: opacity 1.2s ease, transform 1.2s ease;
+      cursor: pointer;
     }
-
-    .card.expanded {
-      transform: scale(1.03);
-      padding: 2rem 1.5rem;
-    }
-
-    .card.expanded p {
+    #birthdayOverlay.show {
       opacity: 1;
-      pointer-events: auto;
+      transform: translateY(0);
+    }
+    #birthdayOverlay.hide {
+      opacity: 0;
+      transform: translateY(-100%);
+    }
+    #birthdayText {
+      font-size: 3.2rem;
+      font-family: 'Caveat', cursive;
+      text-align: center;
+      padding: 0 2rem;
+      animation: floatBounce 2s ease-in-out infinite;
+    }
+    @keyframes floatBounce {
+      0%,100% { transform: translateY(0); }
+      50% { transform: translateY(-20px); }
     }
 
-    @media (max-width: 600px) {
-      .card {
-        height: 90px;
-        padding: 0.8rem;
-      }
-
-      .card h3 {
-        font-size: 0.95rem;
-      }
+    @media (max-width:600px){
+      .card { height:90px; padding:0.8rem; }
+      .card h3 { font-size:0.95rem; }
+      #birthdayText { font-size: 2.5rem; }
     }
   </style>
 </head>
 <body>
-  <canvas id="cosmicCanvas"></canvas>
 
-  <div class="card-container">
-    <div class="card" onclick="expandCard(this)">
-      <h3>For You 💌</h3>
-      <p>
-Happy Birthday, pookie 🐼🎂💖
-It’s your day — no stress, no rush. Just soft smiles, your favorite things, and all the warm energy around you today 🫶🌸
-You’ve got this quiet magic that makes everything feel better just by being there 💫
-Eat well, take cute selfies, laugh loudly — and don’t let the world dull your glow 🧁💗😼
-Here’s to more of everything that feels like home 💘👑
-      </p>
-    </div>
+  <div id="lockOverlay">
+    Just a little longer, pookie... 🎁
+    <div id="countdown">Loading...</div>
+  </div>
 
-    <div class="card" onclick="expandCard(this)">
-      <h3>Something Sweet 🍰</h3>
-      <p>
-Hope the day wraps around you like comfort.
-You’ve got this way of making things gentler, softer — like the world listens when you’re around 💌🌷
-So let today be about you.
-What you love, what makes you laugh, what makes you feel seen 📸🍰
-You deserve it all — and more 💘🎀👑
-      </p>
-    </div>
+  <div id="birthdayOverlay">
+    <div id="birthdayText">Happy Birthday 🎉</div>
+  </div>
 
-    <div class="card" onclick="expandCard(this)">
-      <h3>Birthday Magic ✨</h3>
-      <p>
-Another year of you — and that’s always worth celebrating 💫
-You’re steady, kind, and unknowingly powerful. The kind of person whose presence makes things lighter.
-So today, do everything that feels good.
-Rest, recharge, smile for no reason.
-This day is yours. And this year? It’ll meet you with the same love you give out 💘👑
+  <div id="mainContent">
+    <canvas id="cosmicCanvas"></canvas>
+    <div class="card-container">
+      <div class="card" onclick="expandCard(this)">
+        <h3>For You 💌</h3>
+        <p>
+Happy Birthday, pookie 🐼🎂💖  
+It’s your day — no stress, no rush. Just soft smiles, your favorite things...  
+Eat well, take selfies, laugh loudly. Here’s to more of what feels like home 💘👑
+        </p>
+      </div>
+      <div class="card" onclick="expandCard(this)">
+        <h3>Something Sweet 🍰</h3>
+        <p>
+Hope today wraps around you like comfort.  
+So let today be about you — what makes you laugh, feel seen...  
+You deserve it all 💘🎀👑
+        </p>
+      </div>
+      <div class="card" onclick="expandCard(this)">
+        <h3>Birthday Magic ✨</h3>
+        <p>
+Another year of you—always worth celebrating 💫  
+This day is yours. And this year? It’ll return the love you give 💘👑  
 Happy Birthday, cutie 🐼🎂🎉💖
-      </p>
+        </p>
+      </div>
     </div>
   </div>
 
   <script>
-    function expandCard(card) {
-      const isExpanded = card.classList.contains('expanded');
-      document.querySelectorAll('.card.expanded').forEach(c => {
-        if (c !== card) collapseCard(c);
-      });
-
-      if (!isExpanded) expand(card);
-      else collapseCard(card);
-    }
-
-    function expand(card) {
-      card.style.height = card.scrollHeight + 'px';
-      card.classList.add('expanded');
-      requestAnimationFrame(() => {
-        card.style.height = card.scrollHeight + 'px';
-      });
-    }
-
-    function collapseCard(card) {
-      const currentHeight = card.scrollHeight;
-      card.style.height = currentHeight + 'px';
-      requestAnimationFrame(() => {
-        card.style.height = '90px';
-        setTimeout(() => {
-          card.classList.remove('expanded');
-        }, 600);
-      });
-    }
-
-    const emojiList = ['🎉', '🎂', '🎁', '🎈', '🍰', '🍫', '🍬', '❤️', '✨', '🥳', '🌸', '🌹', '🎀', '🎊', '💖'];
-    const canvas = document.getElementById('cosmicCanvas');
-    const ctx = canvas.getContext('2d');
-
-    let width, height, dpr;
+    const emojiList = ['🎉','🎂','🎁','🎈','🍰','🍫','🍬','❤️','✨','🥳','🌸','🌹','🎀','🎊','💖'];
+    const canvas = document.getElementById('cosmicCanvas'),
+          ctx = canvas.getContext('2d');
+    let width, height, dpr = window.devicePixelRatio || 1;
     const isMobile = window.innerWidth < 768;
     const ITEM_COUNT = isMobile ? 240 : 400;
     let items = [], emojiImages = {};
 
-    function resizeCanvas() {
-      dpr = window.devicePixelRatio || 1;
+    function resizeCanvas(){
       width = window.innerWidth;
       height = window.innerHeight;
-
       canvas.width = width * dpr;
       canvas.height = height * dpr;
-      canvas.style.width = width + 'px';
-      canvas.style.height = height + 'px';
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      canvas.style.width = width+'px';
+      canvas.style.height = height+'px';
+      ctx.setTransform(dpr,0,0,dpr,0,0);
     }
 
-    function renderEmojiToImage(emoji, size) {
-      const off = document.createElement('canvas');
-      const offCtx = off.getContext('2d');
-      off.width = off.height = size * 2;
-
-      offCtx.scale(2, 2);
-      offCtx.font = `${size}px "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif`;
-      offCtx.textAlign = 'center';
-      offCtx.textBaseline = 'middle';
-      offCtx.fillText(emoji, size / 2, size / 2);
-
+    function renderEmojiToImage(e,s){
+      const off=document.createElement('canvas'),
+            c=off.getContext('2d');
+      off.width=off.height=s*2;
+      c.scale(2,2);
+      c.font=`${s}px "Segoe UI Emoji", sans-serif`;
+      c.textAlign='center'; c.textBaseline='middle';
+      c.fillText(e,s/2,s/2);
       return off;
     }
 
-    function generateEmojiImages() {
-      emojiImages = {};
-      const sizeRange = isMobile ? [10, 14] : [14, 24];
-
-      for (let emoji of emojiList) {
-        emojiImages[emoji] = [];
-        for (let size = sizeRange[0]; size <= sizeRange[1]; size += 2) {
-          emojiImages[emoji][size] = renderEmojiToImage(emoji, size);
+    function generateEmojiImages(){
+      emojiImages={};
+      const [min,max] = isMobile?[10,14]:[14,24];
+      for(let e of emojiList){
+        emojiImages[e]={};
+        for(let s=min; s<=max; s+=2){
+          emojiImages[e][s]=renderEmojiToImage(e,s);
         }
       }
     }
 
-    function createItems() {
-      items = [];
-      for (let i = 0; i < ITEM_COUNT; i++) {
-        const emoji = emojiList[Math.floor(Math.random() * emojiList.length)];
-        const size = isMobile
-          ? Math.floor(Math.random() * 3) * 2 + 10
-          : Math.floor(Math.random() * 6) * 2 + 14;
-
-        items.push({
-          emoji,
-          size,
-          x: Math.random() * width,
-          y: Math.random() * height,
-          speed: Math.random() * 0.5 + 0.25,
-          alpha: Math.random() * 0.5 + 0.5
-        });
+    function createItems(){
+      items=[];
+      for(let i=0;i<ITEM_COUNT;i++){
+        const e = emojiList[Math.floor(Math.random()*emojiList.length)];
+        const size = isMobile ? (Math.floor(Math.random()*3)*2+10) : (Math.floor(Math.random()*6)*2+14);
+        items.push({emoji:e,size,x:Math.random()*width,y:Math.random()*height,speed:Math.random()*0.5+0.25,alpha:Math.random()*0.5+0.5});
       }
     }
 
-    function draw() {
-      ctx.clearRect(0, 0, width, height);
-      for (let item of items) {
-        const img = emojiImages[item.emoji][item.size];
-        ctx.globalAlpha = item.alpha;
-        ctx.drawImage(img, item.x, item.y, item.size, item.size);
-        item.y += item.speed;
-
-        if (item.y > height + item.size) {
-          item.y = -item.size;
-          item.x = Math.random() * width;
-          item.emoji = emojiList[Math.floor(Math.random() * emojiList.length)];
-          item.size = isMobile
-            ? Math.floor(Math.random() * 3) * 2 + 10
-            : Math.floor(Math.random() * 6) * 2 + 14;
+    function draw(){
+      ctx.clearRect(0,0,width,height);
+      for(let it of items){
+        const img = emojiImages[it.emoji][it.size];
+        ctx.globalAlpha = it.alpha;
+        ctx.drawImage(img,it.x,it.y,it.size,it.size);
+        it.y += it.speed;
+        if(it.y > height+it.size){
+          it.y = -it.size;
+          it.x = Math.random()*width;
+          it.emoji = emojiList[Math.floor(Math.random()*emojiList.length)];
+          it.size = isMobile ? (Math.floor(Math.random()*3)*2+10) : (Math.floor(Math.random()*6)*2+14);
         }
       }
       ctx.globalAlpha = 1;
@@ -264,18 +202,79 @@ Happy Birthday, cutie 🐼🎂🎉💖
       requestAnimationFrame(animate);
     }
 
-    window.addEventListener('resize', () => {
-      resizeCanvas();
-      generateEmojiImages();
-      createItems();
-    });
-
     resizeCanvas();
     generateEmojiImages();
     createItems();
     animate();
 
-    document.addEventListener('contextmenu', e => e.preventDefault());
+    window.addEventListener('resize',()=>{
+      resizeCanvas();
+      generateEmojiImages();
+      createItems();
+    });
+
+    function expandCard(card){
+      const expanded = card.classList.contains('expanded');
+      document.querySelectorAll('.card.expanded').forEach(c=>{ if(c!==card) collapseCard(c); });
+      expanded ? collapseCard(card) : expand(card);
+    }
+
+    function expand(card){
+      card.style.height = card.scrollHeight + 'px';
+      card.classList.add('expanded');
+      requestAnimationFrame(()=>{ card.style.height = card.scrollHeight + 'px'; });
+    }
+
+    function collapseCard(card){
+      const ch = card.scrollHeight;
+      card.style.height = ch + 'px';
+      requestAnimationFrame(()=>{
+        card.style.height = '90px';
+        setTimeout(()=>card.classList.remove('expanded'),600);
+      });
+    }
+
+    document.addEventListener('contextmenu',e=>e.preventDefault());
+
+    function checkTimeIST() {
+      const now = new Date();
+      const offset = 330 + now.getTimezoneOffset(); // IST offset
+      return new Date(now.getTime() + offset * 60000);
+    }
+
+    function updateCountdown() {
+      const now = checkTimeIST();
+      const target = new Date(now);
+      target.setHours(23, 50, 53, 0);
+
+      const diff = target - now;
+      if (diff <= 0) {
+        triggerBirthday();
+        return;
+      }
+
+      const hrs = String(Math.floor(diff / 3600000)).padStart(2, '0');
+      const mins = String(Math.floor((diff % 3600000) / 60000)).padStart(2, '0');
+      const secs = String(Math.floor((diff % 60000) / 1000)).padStart(2, '0');
+      document.getElementById('countdown').textContent = `${hrs}:${mins}:${secs}`;
+    }
+
+    let hasTriggered = false;
+
+    function triggerBirthday() {
+      if (hasTriggered) return;
+      hasTriggered = true;
+      document.getElementById('lockOverlay').style.display = 'none';
+      document.getElementById('birthdayOverlay').classList.add('show');
+    }
+
+    document.getElementById('birthdayOverlay').addEventListener('click', ()=>{
+      document.getElementById('birthdayOverlay').classList.add('hide');
+      document.getElementById('mainContent').style.display = 'block';
+    });
+
+    updateCountdown();
+    setInterval(updateCountdown, 1000);
   </script>
 </body>
 </html>
