@@ -9,8 +9,10 @@
       box-sizing: border-box;
     }
 
-    body {
+    html, body {
       margin: 0;
+      padding: 0;
+      height: 100%;
       background: black;
       overflow-x: hidden;
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -18,10 +20,11 @@
       -webkit-user-select: none;
       -webkit-tap-highlight-color: transparent;
       user-select: none;
+      overscroll-behavior: none; /* prevent bounce on mobile */
     }
 
     canvas {
-      position: fixed;
+      position: absolute;
       top: 0;
       left: 0;
       z-index: 0;
@@ -152,7 +155,6 @@ So happy birthday again, pookie. May this year be kind to you in all the ways yo
   <script>
     function expandCard(card) {
       const isExpanded = card.classList.contains('expanded');
-
       document.querySelectorAll('.card.expanded').forEach(c => {
         if (c !== card) collapseCard(c);
       });
@@ -185,9 +187,8 @@ So happy birthday again, pookie. May this year be kind to you in all the ways yo
     const ctx = canvas.getContext('2d');
 
     let width, height, dpr;
-
     const isMobile = window.innerWidth < 768;
-    const ITEM_COUNT = isMobile ? 280 : 400;
+    const ITEM_COUNT = isMobile ? 240 : 400;
     let items = [], emojiImages = {};
 
     function resizeCanvas() {
@@ -218,9 +219,11 @@ So happy birthday again, pookie. May this year be kind to you in all the ways yo
 
     function generateEmojiImages() {
       emojiImages = {};
+      const sizeRange = isMobile ? [10, 14] : [14, 24];
+
       for (let emoji of emojiList) {
         emojiImages[emoji] = [];
-        for (let size = 14; size <= 24; size += 2) {
+        for (let size = sizeRange[0]; size <= sizeRange[1]; size += 2) {
           emojiImages[emoji][size] = renderEmojiToImage(emoji, size);
         }
       }
@@ -230,7 +233,10 @@ So happy birthday again, pookie. May this year be kind to you in all the ways yo
       items = [];
       for (let i = 0; i < ITEM_COUNT; i++) {
         const emoji = emojiList[Math.floor(Math.random() * emojiList.length)];
-        const size = Math.floor(Math.random() * 6) * 2 + 14; // 14–24
+        const size = isMobile
+          ? Math.floor(Math.random() * 3) * 2 + 10
+          : Math.floor(Math.random() * 6) * 2 + 14;
+
         items.push({
           emoji,
           size,
@@ -254,7 +260,9 @@ So happy birthday again, pookie. May this year be kind to you in all the ways yo
           item.y = -item.size;
           item.x = Math.random() * width;
           item.emoji = emojiList[Math.floor(Math.random() * emojiList.length)];
-          item.size = Math.floor(Math.random() * 6) * 2 + 14;
+          item.size = isMobile
+            ? Math.floor(Math.random() * 3) * 2 + 10
+            : Math.floor(Math.random() * 6) * 2 + 14;
         }
       }
       ctx.globalAlpha = 1;
@@ -276,7 +284,6 @@ So happy birthday again, pookie. May this year be kind to you in all the ways yo
     createItems();
     animate();
 
-    // Disable right-click
     document.addEventListener('contextmenu', e => e.preventDefault());
   </script>
 </body>
