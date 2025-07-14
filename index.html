@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Happy Birthday</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background: black;
+      overflow-x: hidden;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      color: white;
+    }
+
+    canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      z-index: 0;
+      display: block;
+    }
+
+    .card-container {
+      position: relative;
+      z-index: 2;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1.5rem;
+      padding: 2rem 1rem 4rem;
+      margin-top: 5vh;
+    }
+
+    .card {
+      background: rgba(255, 255, 255, 0.08);
+      backdrop-filter: blur(8px);
+      border-radius: 20px;
+      width: 90vw;
+      max-width: 600px;
+      max-height: 100px;
+      padding: 1rem;
+      text-align: center;
+      cursor: pointer;
+      transition: transform 0.5s ease, max-height 0.6s ease, padding 0.6s ease;
+      overflow: hidden;
+      position: relative;
+      box-shadow: 0 0 15px rgba(255, 255, 255, 0.08);
+    }
+
+    .card h3 {
+      margin: 0;
+      font-size: 1.1rem;
+    }
+
+    .card p {
+      opacity: 0;
+      max-height: 0;
+      overflow: hidden;
+      pointer-events: none;
+      transition: opacity 0.4s ease, max-height 0.6s ease;
+      margin-top: 1rem;
+      line-height: 1.5;
+      white-space: pre-wrap;
+    }
+
+    .card.expanded {
+      max-height: 1000px;
+      transform: scale(1.02);
+      padding: 2rem 1.5rem;
+    }
+
+    .card.expanded p {
+      opacity: 1;
+      pointer-events: auto;
+      max-height: 2000px;
+    }
+
+    @media (max-width: 600px) {
+      .card h3 {
+        font-size: 1rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <canvas id="heartsCanvas"></canvas>
+  <canvas id="cosmicCanvas"></canvas>
+
+  <div class="card-container">
+    <div class="card" onclick="expandCard(this)">
+      <h3>Just for You 💌</h3>
+      <p>
+Happy Birthday, pookie 🐼🎂💖
+
+It’s your day today, so no overthinking, no stress—just smiles, your favorite food, and all the warm vibes 🫶🌸  
+You have this quiet magic about you—just being around you makes everything feel lighter and better 💫
+
+So go do something fun, eat what you love, take a million cute selfies, and don’t let the world dull your sparkle 🧁💗😼  
+Happy birthday again, pookie. May your day be filled with love, joy, laughter, and lots of sweet surprises—you deserve it all and more 💘👑
+      </p>
+    </div>
+
+    <div class="card" onclick="expandCard(this)">
+      <h3>Something Sweet 🍰</h3>
+      <p>
+Happy Birthday, pookie 🐼🎂💖
+
+I hope today brings you the kind of love, peace, and joy that feels like a warm hug on a quiet day 💌🌷  
+You have this rare way of making everything softer, brighter—like the world calms down just a little when you’re around 💫  
+Your laugh is contagious, your presence comforting, and your heart? Absolutely golden.
+
+So take your time today. Do what makes you smile, eat what makes you happy, take a million selfies, and let the day treat you like the beautiful soul you are 💗📸🍰  
+Let people spoil you, let the little things make you smile, and don’t hold back from being your fullest, happiest self today 🌸🌈
+
+Happy birthday again, pookie. May your day overflow with laughter, love, sweet surprises, and everything your heart’s been quietly wishing for 💘🎀👑  
+Here’s to another year of your magic, your light, and your one-of-a-kind kind of beautiful 💖
+      </p>
+    </div>
+
+    <div class="card" onclick="expandCard(this)">
+      <h3>Birthday Magic ✨</h3>
+      <p>
+Another year, another reason to celebrate the incredible person you are. Not just because it's your birthday—but because you honestly make life better just by being in it 💫  
+You’re thoughtful in the quietest ways, strong when it matters most, and always manage to bring a little extra light into the lives around you—without even realizing it.
+
+Today’s all yours. Sleep in, blast your favorite songs, eat too much cake, wear something cute just because, and let people remind you how loved you are 🎶🍰💗  
+You deserve a day full of genuine smiles, little joys that catch you off guard, and moments that feel like a warm memory even as they happen.
+
+So happy birthday again, pookie. May this year be kind to you in all the ways you’ve been kind to others 💘👑
+      </p>
+    </div>
+  </div>
+
+  <script>
+    function expandCard(card) {
+      document.querySelectorAll('.card').forEach(c => {
+        if (c !== card) c.classList.remove('expanded');
+      });
+      card.classList.toggle('expanded');
+    }
+
+    const emojiList = ['🎉', '🎂', '🎁', '🎈', '🍰', '🍫', '🍬', '❤️'];
+    const heartsCanvas = document.getElementById('heartsCanvas');
+    const heartsCtx = heartsCanvas.getContext('2d', { willReadFrequently: true });
+    const canvas = document.getElementById('cosmicCanvas');
+    const ctx = canvas.getContext('2d', { willReadFrequently: true });
+
+    let width = window.innerWidth;
+    let height = window.innerHeight;
+
+    function resizeCanvas() {
+      width = window.innerWidth;
+      height = window.innerHeight;
+      canvas.width = heartsCanvas.width = width;
+      canvas.height = heartsCanvas.height = height;
+    }
+
+    resizeCanvas();
+
+    const items = [], hearts = [];
+    const itemCount = 300, heartCount = 50;
+
+    function createItems() {
+      for (let i = 0; i < itemCount; i++) {
+        items.push({
+          emoji: emojiList[Math.floor(Math.random() * emojiList.length)],
+          x: Math.random() * width,
+          y: Math.random() * height,
+          size: Math.random() * 12 + 16,
+          speed: Math.random() * 0.5 + 0.25,
+          alpha: Math.random() * 0.6 + 0.4
+        });
+      }
+    }
+
+    function createHearts() {
+      for (let i = 0; i < heartCount; i++) {
+        hearts.push({
+          x: Math.random() * width,
+          y: Math.random() * height,
+          size: Math.random() * 14 + 10,
+          speed: Math.random() * 0.3 + 0.1,
+          alpha: Math.random() * 0.5 + 0.3
+        });
+      }
+    }
+
+    function drawHearts() {
+      heartsCtx.clearRect(0, 0, width, height);
+      heartsCtx.font = '16px serif';
+
+      for (let heart of hearts) {
+        heartsCtx.globalAlpha = heart.alpha;
+        heartsCtx.fillText('❤️', heart.x, heart.y);
+        heart.y += heart.speed;
+        if (heart.y > height) {
+          heart.y = -20;
+          heart.x = Math.random() * width;
+        }
+      }
+      heartsCtx.globalAlpha = 1;
+    }
+
+    function drawItems() {
+      ctx.clearRect(0, 0, width, height);
+      for (let item of items) {
+        ctx.font = `${item.size}px serif`;
+        ctx.globalAlpha = item.alpha;
+        ctx.fillText(item.emoji, item.x, item.y);
+        item.y += item.speed;
+
+        if (item.y > height) {
+          item.y = -30;
+          item.x = (Math.random() * width + Math.random() * 30 - 15) % width;
+          item.emoji = emojiList[Math.floor(Math.random() * emojiList.length)];
+        }
+      }
+      ctx.globalAlpha = 1;
+    }
+
+    function generateFog() {
+      const gradient = ctx.createRadialGradient(
+        width / 2, height / 2, 100,
+        width / 2, height / 2, width / 1.2
+      );
+      gradient.addColorStop(0, 'rgba(255,255,255,0.05)');
+      gradient.addColorStop(1, 'rgba(0,0,0,0.1)');
+      ctx.fillStyle = gradient;
+      ctx.fillRect(0, 0, width, height);
+    }
+
+    function animate() {
+      drawHearts();
+      drawItems();
+      generateFog();
+      requestAnimationFrame(animate);
+    }
+
+    window.addEventListener('resize', () => {
+      resizeCanvas();
+      items.length = 0;
+      hearts.length = 0;
+      createItems();
+      createHearts();
+    });
+
+    createItems();
+    createHearts();
+    animate();
+  </script>
+</body>
+</html>
