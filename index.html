@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Happy Birthday</title>
+  <title>Birthday Surprise</title>
   <style>
     * {
       box-sizing: border-box;
@@ -15,6 +15,9 @@
       overflow-x: hidden;
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       color: white;
+      -webkit-user-select: none;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
     }
 
     canvas {
@@ -23,6 +26,7 @@
       left: 0;
       z-index: 0;
       display: block;
+      pointer-events: none;
     }
 
     .card-container {
@@ -31,8 +35,8 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 1.5rem;
-      padding: 2rem 1rem 4rem;
+      gap: 1rem;
+      padding: 2rem 1rem;
       margin-top: 5vh;
     }
 
@@ -40,55 +44,65 @@
       background: rgba(255, 255, 255, 0.08);
       backdrop-filter: blur(8px);
       border-radius: 20px;
-      width: 90vw;
-      max-width: 600px;
-      max-height: 100px;
+      width: 90%;
+      max-width: 500px;
+      height: 100px;
       padding: 1rem;
       text-align: center;
       cursor: pointer;
-      transition: transform 0.5s ease, max-height 0.6s ease, padding 0.6s ease;
+      transition: transform 0.4s ease, height 0.4s ease, padding 0.4s ease;
       overflow: hidden;
       position: relative;
       box-shadow: 0 0 15px rgba(255, 255, 255, 0.08);
+      border: none;
+      outline: none;
+    }
+
+    .card:focus,
+    .card:focus-visible,
+    .card:focus-within {
+      outline: none !important;
+      box-shadow: none !important;
     }
 
     .card h3 {
       margin: 0;
-      font-size: 1.1rem;
+      font-size: 1rem;
     }
 
     .card p {
       opacity: 0;
-      max-height: 0;
-      overflow: hidden;
       pointer-events: none;
-      transition: opacity 0.4s ease, max-height 0.6s ease;
+      transition: opacity 0.4s ease;
       margin-top: 1rem;
       line-height: 1.5;
       white-space: pre-wrap;
     }
 
     .card.expanded {
-      max-height: 1000px;
-      transform: scale(1.02);
+      height: auto;
+      transform: scale(1.03);
       padding: 2rem 1.5rem;
     }
 
     .card.expanded p {
       opacity: 1;
       pointer-events: auto;
-      max-height: 2000px;
     }
 
     @media (max-width: 600px) {
+      .card {
+        height: 90px;
+        padding: 0.8rem;
+      }
+
       .card h3 {
-        font-size: 1rem;
+        font-size: 0.95rem;
       }
     }
   </style>
 </head>
 <body>
-  <canvas id="heartsCanvas"></canvas>
   <canvas id="cosmicCanvas"></canvas>
 
   <div class="card-container">
@@ -136,110 +150,111 @@ So happy birthday again, pookie. May this year be kind to you in all the ways yo
     </div>
   </div>
 
-<!-- Keep your HTML same -->
-...
-<script>
-function expandCard(card) {
-  document.querySelectorAll('.card').forEach(c => {
-    if (c !== card) c.classList.remove('expanded');
-  });
-  card.classList.toggle('expanded');
-}
-
-const emojiList = ['🎉', '🎂', '🎁', '🎈', '🍰', '🍫', '🍬', '❤️'];
-const canvas = document.getElementById('cosmicCanvas');
-const ctx = canvas.getContext('2d');
-
-let width, height, dpr;
-
-const isMobile = window.innerWidth < 768;
-const ITEM_COUNT = isMobile ? 220 : 400;
-let items = [], emojiImages = {};
-
-function resizeCanvas() {
-  dpr = window.devicePixelRatio || 1;
-  width = window.innerWidth;
-  height = window.innerHeight;
-
-  canvas.width = width * dpr;
-  canvas.height = height * dpr;
-  canvas.style.width = width + 'px';
-  canvas.style.height = height + 'px';
-  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-}
-
-function renderEmojiToImage(emoji, size) {
-  const off = document.createElement('canvas');
-  const offCtx = off.getContext('2d');
-  off.width = off.height = size;
-
-  offCtx.font = `${size}px "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif`;
-  offCtx.textAlign = 'center';
-  offCtx.textBaseline = 'middle';
-  offCtx.fillText(emoji, size / 2, size / 2);
-
-  return off;
-}
-
-function generateEmojiImages() {
-  emojiImages = {};
-  for (let emoji of emojiList) {
-    emojiImages[emoji] = [];
-    for (let size = 14; size <= 24; size += 2) {
-      emojiImages[emoji][size] = renderEmojiToImage(emoji, size);
+  <script>
+    function expandCard(card) {
+      document.querySelectorAll('.card').forEach(c => {
+        if (c !== card) c.classList.remove('expanded');
+      });
+      card.classList.toggle('expanded');
     }
-  }
-}
 
-function createItems() {
-  items = [];
-  for (let i = 0; i < ITEM_COUNT; i++) {
-    const emoji = emojiList[Math.floor(Math.random() * emojiList.length)];
-    const size = Math.floor(Math.random() * 6) * 2 + 14; // 14–24
-    items.push({
-      emoji,
-      size,
-      x: Math.random() * width,
-      y: Math.random() * height,
-      speed: Math.random() * 0.5 + 0.25,
-      alpha: Math.random() * 0.5 + 0.5
+    const emojiList = ['🎉', '🎂', '🎁', '🎈', '🍰', '🍫', '🍬', '❤️'];
+    const canvas = document.getElementById('cosmicCanvas');
+    const ctx = canvas.getContext('2d');
+
+    let width, height, dpr;
+
+    const isMobile = window.innerWidth < 768;
+    const ITEM_COUNT = isMobile ? 280 : 400;
+    let items = [], emojiImages = {};
+
+    function resizeCanvas() {
+      dpr = window.devicePixelRatio || 1;
+      width = window.innerWidth;
+      height = window.innerHeight;
+
+      canvas.width = width * dpr;
+      canvas.height = height * dpr;
+      canvas.style.width = width + 'px';
+      canvas.style.height = height + 'px';
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    }
+
+    function renderEmojiToImage(emoji, size) {
+      const off = document.createElement('canvas');
+      const offCtx = off.getContext('2d');
+      off.width = off.height = size;
+
+      offCtx.font = `${size}px "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif`;
+      offCtx.textAlign = 'center';
+      offCtx.textBaseline = 'middle';
+      offCtx.fillText(emoji, size / 2, size / 2);
+
+      return off;
+    }
+
+    function generateEmojiImages() {
+      emojiImages = {};
+      for (let emoji of emojiList) {
+        emojiImages[emoji] = [];
+        for (let size = 14; size <= 24; size += 2) {
+          emojiImages[emoji][size] = renderEmojiToImage(emoji, size);
+        }
+      }
+    }
+
+    function createItems() {
+      items = [];
+      for (let i = 0; i < ITEM_COUNT; i++) {
+        const emoji = emojiList[Math.floor(Math.random() * emojiList.length)];
+        const size = Math.floor(Math.random() * 6) * 2 + 14; // 14–24
+        items.push({
+          emoji,
+          size,
+          x: Math.random() * width,
+          y: Math.random() * height,
+          speed: Math.random() * 0.5 + 0.25,
+          alpha: Math.random() * 0.5 + 0.5
+        });
+      }
+    }
+
+    function draw() {
+      ctx.clearRect(0, 0, width, height);
+      for (let item of items) {
+        const img = emojiImages[item.emoji][item.size];
+        ctx.globalAlpha = item.alpha;
+        ctx.drawImage(img, item.x, item.y, item.size, item.size);
+        item.y += item.speed;
+
+        if (item.y > height + item.size) {
+          item.y = -item.size;
+          item.x = Math.random() * width;
+          item.emoji = emojiList[Math.floor(Math.random() * emojiList.length)];
+          item.size = Math.floor(Math.random() * 6) * 2 + 14;
+        }
+      }
+      ctx.globalAlpha = 1;
+    }
+
+    function animate() {
+      draw();
+      requestAnimationFrame(animate);
+    }
+
+    window.addEventListener('resize', () => {
+      resizeCanvas();
+      generateEmojiImages();
+      createItems();
     });
-  }
-}
 
-function draw() {
-  ctx.clearRect(0, 0, width, height);
-  for (let item of items) {
-    const img = emojiImages[item.emoji][item.size];
-    ctx.globalAlpha = item.alpha;
-    ctx.drawImage(img, item.x, item.y, item.size, item.size);
-    item.y += item.speed;
+    resizeCanvas();
+    generateEmojiImages();
+    createItems();
+    animate();
 
-    if (item.y > height + item.size) {
-      item.y = -item.size;
-      item.x = Math.random() * width;
-      item.emoji = emojiList[Math.floor(Math.random() * emojiList.length)];
-      item.size = Math.floor(Math.random() * 6) * 2 + 14;
-    }
-  }
-  ctx.globalAlpha = 1;
-}
-
-function animate() {
-  draw();
-  requestAnimationFrame(animate);
-}
-
-window.addEventListener('resize', () => {
-  resizeCanvas();
-  generateEmojiImages();
-  createItems();
-});
-
-resizeCanvas();
-generateEmojiImages();
-createItems();
-animate();
-</script>
+    // Disable right click
+    document.addEventListener('contextmenu', e => e.preventDefault());
+  </script>
 </body>
 </html>
