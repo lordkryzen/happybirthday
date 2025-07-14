@@ -136,6 +136,8 @@ So happy birthday again, pookie. May this year be kind to you in all the ways yo
     </div>
   </div>
 
+  <!-- Keep your HTML same -->
+...
   <script>
     function expandCard(card) {
       document.querySelectorAll('.card').forEach(c => {
@@ -146,44 +148,56 @@ So happy birthday again, pookie. May this year be kind to you in all the ways yo
 
     const emojiList = ['🎉', '🎂', '🎁', '🎈', '🍰', '🍫', '🍬', '❤️'];
     const heartsCanvas = document.getElementById('heartsCanvas');
-    const heartsCtx = heartsCanvas.getContext('2d', { willReadFrequently: true });
     const canvas = document.getElementById('cosmicCanvas');
-    const ctx = canvas.getContext('2d', { willReadFrequently: true });
+    const heartsCtx = heartsCanvas.getContext('2d');
+    const ctx = canvas.getContext('2d');
 
-    let width = window.innerWidth;
-    let height = window.innerHeight;
+    let width, height, dpr;
 
     function resizeCanvas() {
+      dpr = window.devicePixelRatio || 1;
       width = window.innerWidth;
       height = window.innerHeight;
-      canvas.width = heartsCanvas.width = width;
-      canvas.height = heartsCanvas.height = height;
+
+      [canvas, heartsCanvas].forEach(c => {
+        c.width = width * dpr;
+        c.height = height * dpr;
+        c.style.width = width + 'px';
+        c.style.height = height + 'px';
+      });
+
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      heartsCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
     }
 
     resizeCanvas();
 
     const items = [], hearts = [];
-    const itemCount = 300, heartCount = 50;
+    const isMobile = window.innerWidth < 768;
+    const itemCount = isMobile ? 100 : 300;
+    const heartCount = isMobile ? 20 : 50;
 
     function createItems() {
+      items.length = 0;
       for (let i = 0; i < itemCount; i++) {
         items.push({
           emoji: emojiList[Math.floor(Math.random() * emojiList.length)],
           x: Math.random() * width,
           y: Math.random() * height,
-          size: Math.random() * 12 + 16,
-          speed: Math.random() * 0.5 + 0.25,
+          size: Math.random() * (isMobile ? 12 : 16) + (isMobile ? 16 : 20),
+          speed: Math.random() * 0.4 + 0.2,
           alpha: Math.random() * 0.6 + 0.4
         });
       }
     }
 
     function createHearts() {
+      hearts.length = 0;
       for (let i = 0; i < heartCount; i++) {
         hearts.push({
           x: Math.random() * width,
           y: Math.random() * height,
-          size: Math.random() * 14 + 10,
+          size: Math.random() * 12 + 12,
           speed: Math.random() * 0.3 + 0.1,
           alpha: Math.random() * 0.5 + 0.3
         });
@@ -192,8 +206,7 @@ So happy birthday again, pookie. May this year be kind to you in all the ways yo
 
     function drawHearts() {
       heartsCtx.clearRect(0, 0, width, height);
-      heartsCtx.font = '16px serif';
-
+      heartsCtx.font = '20px serif';
       for (let heart of hearts) {
         heartsCtx.globalAlpha = heart.alpha;
         heartsCtx.fillText('❤️', heart.x, heart.y);
@@ -213,10 +226,9 @@ So happy birthday again, pookie. May this year be kind to you in all the ways yo
         ctx.globalAlpha = item.alpha;
         ctx.fillText(item.emoji, item.x, item.y);
         item.y += item.speed;
-
         if (item.y > height) {
           item.y = -30;
-          item.x = (Math.random() * width + Math.random() * 30 - 15) % width;
+          item.x = Math.random() * width;
           item.emoji = emojiList[Math.floor(Math.random() * emojiList.length)];
         }
       }
@@ -243,8 +255,6 @@ So happy birthday again, pookie. May this year be kind to you in all the ways yo
 
     window.addEventListener('resize', () => {
       resizeCanvas();
-      items.length = 0;
-      hearts.length = 0;
       createItems();
       createHearts();
     });
